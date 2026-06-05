@@ -1,58 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# NativePHP Filament Boilerplate
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is a Laravel 13 starter configured for:
 
-## About Laravel
+- NativePHP Mobile v3
+- Filament v5
+- A root-path Filament admin panel
+- A local-only auto-login middleware for development
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Recreate the setup
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+1. Install the PHP and JS dependencies.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer require nativephp/mobile:^3.3 filament/filament:^5.0
+npm install axios
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+2. Set the required NativePHP environment values in `.env`.
 
-## Contributing
+```dotenv
+NATIVEPHP_APP_ID=com.yourcompany.yourapp
+NATIVEPHP_APP_VERSION="DEBUG"
+NATIVEPHP_APP_VERSION_CODE="1"
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Install the NativePHP shell with ICU support.
 
-## Code of Conduct
+```bash
+php artisan native:install --with-icu
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+This repo also keeps the generated `native` launcher, `nativephp.lock`, and `config/nativephp.php`.
 
-## Security Vulnerabilities
+4. Install Filament with panels enabled.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan filament:install --panels
+```
 
-## License
+5. Make the `User` model Filament-accessible.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```php
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+
+class User extends Authenticatable implements FilamentUser
+{
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+}
+```
+
+6. Create the panel provider and serve it from the root path.
+
+In [app/Providers/Filament/AdminPanelProvider.php](./app/Providers/Filament/AdminPanelProvider.php), set:
+
+```php
+->path('')
+->viteTheme('resources/css/filament/admin/theme.css')
+```
+
+The provider is also registered in [bootstrap/providers.php](./bootstrap/providers.php).
+
+7. Add the NativePHP Vite plugin and the Filament theme entry.
+
+```js
+import { nativephpMobile, nativephpHotFile } from './vendor/nativephp/mobile/resources/js/vite-plugin.js';
+
+laravel({
+    input: [
+        'resources/css/app.css',
+        'resources/js/app.js',
+        'resources/css/filament/admin/theme.css',
+    ],
+    refresh: true,
+    hotFile: nativephpHotFile(),
+}),
+nativephpMobile(),
+```
+
+This is reflected in [vite.config.js](./vite.config.js).
+
+8. Add the Filament theme file with NativePHP safe-area padding.
+
+```css
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+```
+
+The current theme file is [resources/css/filament/admin/theme.css](./resources/css/filament/admin/theme.css).
+
+9. Add a local-only middleware that auto-logs a development user into Filament.
+
+The implementation lives in [app/Http/Middleware/AutoLoginLocalUser.php](./app/Http/Middleware/AutoLoginLocalUser.php) and is attached in the panel provider middleware stack.
+
+10. Route the app through Filament at `/`.
+
+[routes/web.php](./routes/web.php) intentionally does not register a separate welcome-page route because the Filament panel handles the root path.
