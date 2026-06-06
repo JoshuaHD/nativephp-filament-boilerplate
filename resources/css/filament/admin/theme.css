@@ -9,3 +9,65 @@ body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
 }
+
+.fi-sidebar-header {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.fi-mobile-resource-page--constrained .fi-topbar-ctn {
+    display: none !important;
+}
+
+.fi-mobile-resource-page--constrained .fi-topbar-open-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-topbar-close-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-topbar-open-collapse-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-topbar-close-collapse-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-sidebar-open-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-sidebar-open-collapse-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-sidebar-close-collapse-sidebar-btn,
+.fi-mobile-resource-page--constrained .fi-sidebar,
+.fi-mobile-resource-page--constrained .fi-sidebar-close-overlay {
+    display: none !important;
+}
+
+.fi-mobile-resource-page--constrained .fi-main-ctn {
+    opacity: 1;
+}
+
+.fi-mobile-resource-page--constrained .fi-page-header-main-ctn {
+    gap: 0;
+    padding-top: 0;
+}
+
+.fi-mobile-constrained-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+}
+
+.fi-mobile-constrained-header-start,
+.fi-mobile-constrained-header-end {
+    display: flex;
+    align-items: center;
+}
+
+.fi-mobile-constrained-header-end {
+    justify-content: flex-end;
+}
+
+.fi-mobile-constrained-header-end .fi-ac {
+    justify-content: flex-end;
+}
+
+.fi-mobile-constrained-header-heading {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
