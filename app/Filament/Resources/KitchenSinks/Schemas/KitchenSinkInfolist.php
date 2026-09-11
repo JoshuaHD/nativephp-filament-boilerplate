@@ -20,17 +20,23 @@ class KitchenSinkInfolist
                 Section::make('Overview')
                     ->columns(3)
                     ->schema([
+                        TextEntry::make('id')->label('ID'),
                         TextEntry::make('name'),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('category'),
                         TextEntry::make('visibility')->badge(),
+                        TextEntry::make('price')->money('USD'),
+                        TextEntry::make('progress')->suffix('%'),
                         TextEntry::make('priority'),
                         ColorEntry::make('favorite_color'),
                         IconEntry::make('is_active')->boolean(),
                         IconEntry::make('requires_follow_up')->boolean(),
                         TextEntry::make('published_at')->dateTime(),
                         TextEntry::make('event_date')->date(),
-                        TextEntry::make('event_time'),
+                        TextEntry::make('event_time')->time(),
+                        TextEntry::make('reminder_at')->dateTime(),
+                        TextEntry::make('created_at')->dateTime(),
+                        TextEntry::make('updated_at')->dateTime(),
                     ]),
                 Section::make('Contact')
                     ->columns(3)
@@ -43,6 +49,9 @@ class KitchenSinkInfolist
                     ->schema([
                         ImageEntry::make('hero_image')
                             ->disk('public')
+                            ->columnSpanFull(),
+                        TextEntry::make('attachments')
+                            ->listWithLineBreaks()
                             ->columnSpanFull(),
                         TextEntry::make('tags')
                             ->badge()
@@ -78,7 +87,7 @@ class KitchenSinkInfolist
                         TextEntry::make('summary')->columnSpanFull(),
                         TextEntry::make('notes')->columnSpanFull(),
                         TextEntry::make('content')->html()->columnSpanFull(),
-                        TextEntry::make('markdown_content')->columnSpanFull(),
+                        TextEntry::make('markdown_content')->markdown()->columnSpanFull(),
                         TextEntry::make('code_snippet')
                             ->fontFamily('mono')
                             ->columnSpanFull(),

@@ -108,3 +108,19 @@ The implementation lives in [app/Http/Middleware/AutoLoginLocalUser.php](./app/H
 10. Route the app through Filament at `/`.
 
 [routes/web.php](./routes/web.php) intentionally does not register a separate welcome-page route because the Filament panel handles the root path.
+
+## Android ICU data
+
+The Android runtime uses ICU 77.1, but its bundled data lacks currency-formatting resources. Install the matching full data before building:
+
+```bash
+php artisan native:install --with-icu --no-interaction
+php artisan app:install-icu-data --no-interaction
+XDEBUG_MODE=off php artisan native:run android emulator-5554 --no-interaction --no-tty
+```
+
+The setup command downloads the pinned official ICU 77.1 archive, verifies its SHA-512 checksum, and installs only `icudt77l.dat` and `LICENSE` into `resources/icu/`. It verifies existing files before skipping the download and returns a failure on download or checksum errors. Generated data is ignored by Git, so run the command on each fresh checkout or build environment.
+
+`AppServiceProvider` sets `ICU_DATA` on Android only when `intl` is loaded and the data filename matches the runtime's ICU major version. The pinned version matches the embedded Android runtime, not the host PHP installation; revisit it when upgrading the runtime.
+
+The KitchenSink detail page displays every stored field, and the listing makes every column selectable. Prices use USD formatting. Verify currency output in the compiled Android app, since desktop PHP tests and `extension_loaded('intl')` alone do not detect missing runtime resources.

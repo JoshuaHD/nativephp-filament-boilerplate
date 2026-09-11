@@ -11,7 +11,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (config('nativephp-internal.platform') === 'android' && extension_loaded('intl')) {
+            $icuMajorVersion = explode('.', INTL_ICU_VERSION)[0];
+
+            if (is_file(resource_path("icu/icudt{$icuMajorVersion}l.dat"))) {
+                putenv('ICU_DATA='.resource_path('icu'));
+            }
+        }
     }
 
     /**
