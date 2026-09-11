@@ -123,23 +123,4 @@ The setup command downloads the pinned official ICU 77.1 archive, verifies its S
 
 `AppServiceProvider` sets `ICU_DATA` on Android only when `intl` is loaded and the data filename matches the runtime's ICU major version. The pinned version matches the embedded Android runtime, not the host PHP installation; revisit it when upgrading the runtime.
 
-The KitchenSink detail page displays every stored field, and the listing makes every column selectable. Prices use USD formatting. Verify currency output in the compiled Android app, since desktop PHP tests and `extension_loaded('intl')` alone do not detect missing runtime resources.
-
-## Removing the KitchenSink demo
-
-If you do not want the demo resource in your cloned project, remove these files:
-
-- `app/Filament/Resources/KitchenSinks/`
-- `app/Models/KitchenSink.php`
-- `database/migrations/2026_06_05_231613_create_kitchen_sinks_table.php`
-
-If you have already run the migration, reset or remove the table as appropriate for your environment:
-
-```bash
-php artisan migrate:fresh --seed --no-interaction
-```
-
-The shared mobile resource page helpers are not part of the demo and can be kept:
-
-- `app/Filament/Resources/Pages/`
-- `resources/views/filament/resources/pages/mobile-constrained-header.blade.php`
+Verify currency output in the compiled Android app, since desktop PHP tests and `extension_loaded('intl')` alone do not detect missing runtime resources.
