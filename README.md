@@ -109,6 +109,110 @@ The implementation lives in [app/Http/Middleware/AutoLoginLocalUser.php](./app/H
 
 [routes/web.php](./routes/web.php) intentionally does not register a separate welcome-page route because the Filament panel handles the root path.
 
+## Adding dashboard tiles
+
+Dashboard tiles are Filament widgets. The panel provider already discovers widgets from `app/Filament/Widgets`, so a new widget does not need a separate registration step.
+
+For a set of statistics, generate a stats overview widget:
+
+```bash
+php artisan make:filament-widget OrdersOverview --stats-overview --no-interaction
+```
+
+Edit the generated `app/Filament/Widgets/OrdersOverview.php` file:
+
+```php
+<?php
+
+namespace App\Filament\Widgets;
+
+use App\Models\Order;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+
+class OrdersOverview extends BaseWidget
+{
+    protected function getStats(): array
+    {
+        return [
+            Stat::make('Orders', Order::query()->count())
+                ->description('All orders')
+                ->color('success'),
+            Stat::make('Revenue', '$'.number_format(Order::query()->sum('total'), 2))
+                ->description('Recorded revenue')
+                ->color('primary'),
+        ];
+    }
+}
+```
+
+The widget appears on the default dashboard through `discoverWidgets()`. For other tile types, use the same command with `--chart` or `--table` and implement the generated class. Keep queries in the widget class and return only the values needed by the tile.
+
+## Creating a new resource form
+
+Filament resources provide the list, create, view, and edit pages for an Eloquent model. Generate the model, migration, factory, and resource together when starting a new feature:
+
+```bash
+php artisan make:filament-resource Order --model --migration --factory --no-interaction
+```
+
+Run the migration, then define the fields in the generated schema file:
+
+```bash
+php artisan migrate --no-interaction
+```
+
+Edit `app/Filament/Resources/Orders/Schemas/OrderForm.php`:
+
+```php
+<?php
+
+namespace App\Filament\Resources\Orders\Schemas;
+
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+
+class OrderForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('reference')
+                    ->required()
+                    ->maxLength(50),
+                Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
+                        'cancelled' => 'Cancelled',
+                    ])
+                    ->required(),
+                TextInput::make('total')
+                    ->numeric()
+                    ->prefix('$')
+                    ->required(),
+            ]);
+    }
+}
+```
+
+The generated resource's `form()` method connects this schema to both the create and edit pages. Add authorization in the model policy, keep validation on the fields, and add casts or relationships to the model as needed. Filament discovers resources from `app/Filament/Resources`, so no route registration is required.
+
+For the compact mobile resource header used by this starter, change the generated page base classes:
+
+```php
+use App\Filament\Resources\Pages\MobileCreateRecord;
+
+class CreateOrder extends MobileCreateRecord
+{
+    protected static string $resource = OrderResource::class;
+}
+```
+
+Use `MobileEditRecord` and `MobileViewRecord` for the corresponding pages. These wrappers keep the save and back actions in the mobile-safe header. If the standard Filament page layout is preferable, leave the generated `CreateRecord`, `EditRecord`, and `ViewRecord` base classes unchanged.
+
 ## Android ICU data
 
 The Android runtime uses ICU 77.1, but its bundled data lacks currency-formatting resources. Install the matching full data before building:
