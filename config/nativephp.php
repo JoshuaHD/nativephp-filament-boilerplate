@@ -200,8 +200,10 @@ return [
         'reset_instances' => true,
         'gc_between_dispatches' => false,
     ],
-
     'android' => [
+        'compile_sdk' => env('NATIVEPHP_ANDROID_COMPILE_SDK', 36),
+        'min_sdk' => env('NATIVEPHP_ANDROID_MIN_SDK', 33),
+        'target_sdk' => env('NATIVEPHP_ANDROID_TARGET_SDK', 36),
         'gradle_jdk_path' => env('NATIVEPHP_GRADLE_PATH'),
         'android_sdk_path' => env('NATIVEPHP_ANDROID_SDK_LOCATION'),
         'emulator_path' => env('ANDROID_EMULATOR'),
